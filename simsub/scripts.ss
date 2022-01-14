@@ -47,7 +47,7 @@
             (for (peer dest)
               (let (msg (cons 'msg i))
                 (trace-publish! i msg)
-                (send! (!!pubsub.publish peer i msg)))))
+                (send! (!!pubsub.publish peer 0 i msg)))))
           (thread-sleep! message-delay)
           (lp (1+ i)))))
     (thread-sleep! wait))

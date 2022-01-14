@@ -26,15 +26,16 @@
          (unless (memq @source peers)
            (set! peers (cons @source peers))))
 
-        ((!pubsub.publish id msg)
+        ((!pubsub.publish hop id msg)
          (unless (hash-get messages id) ; seen?
            (hash-put! messages id msg)
            ;; deliver
            (receive id msg)
            ;; and forward
+           (set! hop (1+ hop))
            (for (peer peers)
              (unless (eq? @source peer)
-               (send! (!!pubsub.publish peer id msg)))))))
+               (send! (!!pubsub.publish peer hop id msg)))))))
     (loop))
 
   (try

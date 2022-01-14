@@ -99,16 +99,17 @@
          (unless (memq @source peers)
            (set! peers (cons @source peers))))
 
-        ((!pubsub.publish id msg)
+        ((!pubsub.publish hop id msg)
          (unless (hash-get messages id) ; seen?
            (hash-put! messages id msg)
            (set! window (cons id window))
            ;; deliver
            (receive id msg)
            ;; and forward
+           (set! hop (1+ hop))
            (for (peer D)
              (unless (eq? @source peer)
-               (send! (!!pubsub.publish peer id msg))))))
+               (send! (!!pubsub.publish peer hop id msg))))))
 
         ((!gossipsub.ihave ids)
          (let (iwant (filter (lambda (id) (not (hash-get messages id)))
@@ -119,7 +120,7 @@
         ((!gossipsub.iwant ids)
          (for (id ids)
            (alet (msg (hash-get messages id))
-             (send! (!!pubsub.publish @source id msg)))))
+             (send! (!!pubsub.publish @source 99 id msg)))))
 
         ((!gossipsub.graft)
          (unless (memq @source D)

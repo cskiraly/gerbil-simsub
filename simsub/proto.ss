@@ -7,7 +7,7 @@
 (defproto pubsub
   event:
   (connect)
-  (publish id msg))
+  (publish hop id msg))
 
 (defproto gossipsub
   extend: pubsub
