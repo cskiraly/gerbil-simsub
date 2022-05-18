@@ -56,15 +56,21 @@
     (def publish 0)
     (def deliver 0)
     (def send (make-hash-table-eq))
+    (def sent (make-vector messages))
+    (def recv (make-vector messages))
 
-    (for (evt (unbox traces))
+    (for (evt (reverse (unbox traces)))
       (match evt
         (['trace ts src dest [what . _]]
          (hash-update! send what 1+ 0))
-        (['publish . _]
-         (set! publish (1+ publish)))
-        (['deliver . _]
-         (set! deliver (1+ deliver)))))
+        (['publish ts peer #f [id . _]]
+         (set! publish (1+ publish))
+         (vector-set! sent id ts))
+        (['deliver ts peer #f [id . _]]
+         (set! deliver (1+ deliver))
+         (vector-set! recv id
+           (+ (vector-ref recv id)
+             (- ts (vector-ref sent id)))))))
 
     (displayln "=== simulation summary ===")
     (displayln "nodes: " nodes)
@@ -73,7 +79,11 @@
     (displayln "publish: " publish)
     (displayln "deliver: " deliver)
     (for ((values msg count) send)
-      (displayln msg ": " count)))
+      (displayln msg ": " count))
+    (for ((values ts) sent)
+      (displayln ts))
+    (for ((values ts) recv)
+      (displayln ts)))
 
   (let (simulator (start-simulation! script: my-script
                                      trace: my-trace
